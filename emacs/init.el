@@ -1,3 +1,4 @@
+;; Bootstraps 
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -10,6 +11,7 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+;; use-package
 (straight-use-package 'use-package)
 
 (add-hook 'after-make-frame-functions
@@ -29,12 +31,11 @@
 ;; Line Numbers
 (column-number-mode)
 (global-display-line-numbers-mode t)
-(dolist(mode '(
-	       org-mode-hook
-	       term-mode-hook
-	       vterm-mode-hook
-	       shell-mode-hook
-	       eshell-mode-hook))
+(dolist(mode '( eshell-mode-hook
+		term-mode-hook
+		vterm-mode-hook
+		shell-mode-hook
+		org-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Mode Line
@@ -50,16 +51,13 @@
 (setq use-dialog-box nil)
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
-;; GCMH
-(straight-use-package 'gcmh)
-(gcmh-mode)
 
 ;; Backup Dir
 (setq backup-directory-alist
         `((".*" . ,temporary-file-directory)))
 
-(use-package which-key :straight t)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
 (use-package general :straight t)
 (general-create-definer jc/leader-keys
   :prefix "C-SPC")
@@ -77,6 +75,12 @@
 (use-package org-modern :straight t)
 (global-org-modern-mode)
 
+(dolist (mode '( haskell-mode
+		 rust-mode
+		 zig-mode
+		 go-mode))
+  (straight-use-package mode))
+
 (use-package sly :straight t)
 (setq inferior-lisp-program "sbcl")
 (add-hook 'lisp-mode 'prettify-symbols-mode)
@@ -84,13 +88,6 @@
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 
 (use-package magit :straight t)
-
-(dolist (mode '(
-		zig-mode
-		haskell-mode
-		rust-mode
-		go-mode))
-  (straight-use-package mode))
 
 ;; Vertico
 (use-package vertico :straight t)
