@@ -1,0 +1,185 @@
+#+TITLE: My Emacs Config
+#+AUTHOR: Jack Cedar Janousek-Weaver
+
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+
+* Package Managment
+#+begin_src emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+  (straight-use-package 'use-package)
+
+#+end_src
+
+* UI Stuff
+** Fonts
+#+begin_src emacs-lisp
+  (add-hook 'after-make-frame-functions
+	    (lambda (f)
+	      (set-face-attribute 'default nil
+				  :font "Iosevka 15"
+				  :weight 'medium)))
+  (set-face-attribute 'default nil
+		      :font "Iosevka 15"
+		      :weight 'medium)
+#+end_src
+
+** Themes
+#+begin_src emacs-lisp
+  (use-package doom-themes :straight t)
+    (setq doom-themes-enable-bold t
+	  doom-themes-enable-italic t)
+  (load-theme 'doom-tokyo-night t)
+#+end_src
+
+** Misc
+#+begin_src emacs-lisp
+  ;; Line Numbers
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+  (dolist(mode '(
+		 org-mode-hook
+		 term-mode-hook
+		 vterm-mode-hook
+		 shell-mode-hook
+		 eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+  ;; Mode Line
+  (use-package mood-line :straight t)
+  (mood-line-mode)
+#+end_src
+
+
+* Inital Startup
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (set-fringe-mode 15)
+  (recentf-mode 1)
+  (setq use-dialog-box nil)
+  (global-auto-revert-mode 1)
+  (setq global-auto-revert-non-file-buffers t)
+  ;; GCMH
+  (straight-use-package 'gcmh)
+  (gcmh-mode)
+
+  ;; Backup Dir
+  (setq backup-directory-alist
+          `((".*" . ,temporary-file-directory)))
+#+end_src
+
+* Key Bindings
+#+begin_src emacs-lisp
+    (use-package which-key :straight t)
+    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+    (use-package general :straight t)
+    (general-create-definer jc/leader-keys
+      :prefix "C-SPC")
+    (general-auto-unbind-keys)
+
+    (jc/leader-keys
+      "ot" 'org-babel-tangle
+      "mm" 'set-mark-command
+      "mj" 'exchange-point-and-mark
+      "nf" 'org-roam-node-find
+      "ni" 'org-roam-node-insert)
+#+end_src
+
+
+* Org Mode
+** Basic
+#+begin_src emacs-lisp
+  (use-package org :straight t)
+  (require 'org-tempo)
+  (use-package org-modern :straight t)
+  (global-org-modern-mode)
+#+end_src
+
+* Programming
+
+** Lisp
+#+begin_src emacs-lisp
+  (use-package sly :straight t)
+  (setq inferior-lisp-program "sbcl")
+  (add-hook 'lisp-mode 'prettify-symbols-mode)
+  (straight-use-package 'rainbow-delimiters)
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+#+end_src
+** magit
+#+begin_src emacs-lisp
+  (use-package magit :straight t)
+
+#+end_src
+
+
+** modes
+#+begin_src emacs-lisp
+  (dolist (mode '(
+		  zig-mode
+		  haskell-mode
+		  rust-mode
+		  go-mode))
+    (straight-use-package mode))
+
+#+end_src
+
+
+* Completion
+ * Vertico provides a vertical completion UI
+ * Marginalia adds annotation to completion canidates
+ * Orderless expands the matching capabilities of completions
+#+begin_src emacs-lisp
+  ;; Vertico
+  (use-package vertico :straight t)
+  (vertico-mode)
+
+  ;; Marginalina
+  (use-package marginalia :straight t)
+  (marginalia-mode)
+
+  ;; Orderless
+  (use-package orderless :straight t)
+  (setq completion-styles '(orderless basic))
+  (setq completion-category-overrides '((file (styles basic partial-completion))))
+#+end_src
+** Corfu
+Corfu provides completion popups
+#+begin_src emacs-lisp
+  (use-package corfu
+    :straight t
+    :custom
+    (corfu-cycle t)
+    (corfu-auto t)
+    (corfu-auto-prefix 2)
+    (corfu-auto-delay 0.0)
+    :init 
+    (global-corfu-mode))
+
+#+end_src
+
+* Babel
+#+begin_src emacs-lisp
+  (setq org-babel-lisp-eval-fn #'sly-eval)
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((C . t)
+			       (lisp . t)))
+#+end_src
+
+* Misc Packages
+#+begin_src emacs-lisp
+   (use-package pdf-tools :straight t)
+
+#+end_src
